@@ -3,17 +3,9 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import * as anchor from '@coral-xyz/anchor';
 import { Program } from '@coral-xyz/anchor';
 import { Votingsystemdapp, IDL } from '@/generated/votingsystemdapp-idl'
+import { SOLANA_RPC_URL, PROGRAM_ID_STRING, COMMITMENT_LEVEL } from '@/lib/solana-config';
+import { createBigIntResponse } from '@/lib/bigint-serializer';
 
-// Handle BigInt serialization
-(BigInt.prototype as any).toJSON = function() {
-  return this.toString();
-};
-
-// Program ID from the deployed Solana program
-const PROGRAM_ID_STRING = process.env.NEXT_PUBLIC_PROGRAM_ID || "CfU2hH8HEy6UQhiEeECeJL66112N18EuYq1khpX2N1RF";
-
-// RPC URL for Solana connection
-const RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://devnet.helius-rpc.com/?api-key=28bfff14-4e1a-447d-ba02-2b8bf09c1dc1';
 
 // Example account layout for poll data (customize based on your program's actual account structure)
 interface PollAccount {
@@ -38,7 +30,7 @@ export async function GET(
     const address = paramsObj.address;
     
     if (!address) {
-      return NextResponse.json({ error: 'Poll address is required' }, { status: 400 });
+      return createBigIntResponse({ error: 'Poll address is required' }, { status: 400 });
     }
     
     console.log(`Fetching poll with address: ${address}`);
@@ -52,7 +44,7 @@ export async function GET(
         pollPublicKey = PublicKey.default;
         
         // Return example data for the example poll ID
-        return NextResponse.json({
+        return createBigIntResponse({
           success: true,
           poll: {
             name: 'Example Poll',
@@ -77,11 +69,11 @@ export async function GET(
       pollPublicKey = new PublicKey(address);
     } catch (error) {
       console.error('Invalid poll address:', error);
-      return NextResponse.json({ error: 'Invalid poll address format' }, { status: 400 });
+      return createBigIntResponse({ error: 'Invalid poll address format' }, { status: 400 });
     }
     
     // Set up connection to Solana
-    const connection = new Connection(RPC_URL, 'confirmed');
+    const connection = new Connection(SOLANA_RPC_URL, COMMITMENT_LEVEL);
     
     // Set up program ID
     let programId: PublicKey;
@@ -89,7 +81,7 @@ export async function GET(
       programId = new PublicKey(PROGRAM_ID_STRING);
     } catch (error) {
       console.error('Invalid program ID:', error);
-      return NextResponse.json({ error: 'Invalid program ID format' }, { status: 500 });
+      return createBigIntResponse({ error: 'Invalid program ID format' }, { status: 500 });
     }
     
     // Create a read-only provider (no wallet needed for reading)
@@ -102,7 +94,7 @@ export async function GET(
     const provider = new anchor.AnchorProvider(
       connection,
       readOnlyWallet as any,
-      { commitment: 'confirmed', preflightCommitment: 'confirmed' }
+      { commitment: COMMITMENT_LEVEL, preflightCommitment: COMMITMENT_LEVEL }
     );
     
     // Set up the program
@@ -113,7 +105,7 @@ export async function GET(
       console.log("Program initialized successfully with real Anchor program");
     } catch (programInitError) {
       console.error("Failed to initialize program:", programInitError);
-      return NextResponse.json({ error: 'Failed to initialize program' }, { status: 500 });
+      return createBigIntResponse({ error: 'Failed to initialize program' }, { status: 500 });
     }
     
     try {
@@ -124,7 +116,7 @@ export async function GET(
       
       if (!account) {
         console.log('Poll account not found on blockchain');
-        return NextResponse.json({ error: 'Poll not found on blockchain' }, { status: 404 });
+        return createBigIntResponse({ error: 'Poll not found on blockchain' }, { status: 404 });
       }
       
       console.log('Poll account data fetched successfully');
@@ -152,20 +144,20 @@ export async function GET(
       };
       
       // Return the poll data
-      return NextResponse.json({
+      return createBigIntResponse({
         success: true,
         poll
       });
     } catch (accountError: any) {
       console.error('Error fetching poll account data:', accountError);
       
-      return NextResponse.json({ 
+      return createBigIntResponse({ 
         error: `Failed to fetch poll data: ${accountError.message || 'Unknown error'}` 
       }, { status: 500 });
     }
   } catch (error: any) {
     console.error('API handler error:', error);
-    return NextResponse.json({ 
+    return createBigIntResponse({ 
       error: `Server error: ${error.message || 'Unknown error'}` 
     }, { status: 500 });
   }

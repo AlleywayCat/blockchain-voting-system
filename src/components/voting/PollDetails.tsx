@@ -15,6 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { SOLANA_RPC_URL, COMMITMENT_LEVEL } from '@/lib/solana-config';
 
 interface PollDetailsProps {
   pollAddress: string;
@@ -162,8 +163,8 @@ export function PollDetails({ pollAddress }: PollDetailsProps) {
         // Deserialize and sign the transaction
         const { Connection, PublicKey, Transaction } = await import('@solana/web3.js');
         const connection = new Connection(
-          process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://devnet.helius-rpc.com/?api-key=28bfff14-4e1a-447d-ba02-2b8bf09c1dc1',
-          'confirmed'
+          SOLANA_RPC_URL,
+          COMMITMENT_LEVEL
         );
         
         const transaction = Transaction.from(new Uint8Array(data.transaction));
@@ -178,7 +179,7 @@ export function PollDetails({ pollAddress }: PollDetailsProps) {
         }
 
         // Get fresh blockhash before signing to avoid expiration
-        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+        const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash(COMMITMENT_LEVEL);
         transaction.recentBlockhash = blockhash;
         transaction.lastValidBlockHeight = lastValidBlockHeight;
 
@@ -199,7 +200,7 @@ export function PollDetails({ pollAddress }: PollDetailsProps) {
           signature,
           blockhash,
           lastValidBlockHeight
-        }, 'confirmed');
+        }, COMMITMENT_LEVEL);
         
         toast.success("Vote cast successfully!");
       } else {
@@ -333,7 +334,7 @@ export function PollDetails({ pollAddress }: PollDetailsProps) {
         signature,
         blockhash,
         lastValidBlockHeight
-      }, 'confirmed');
+      }, COMMITMENT_LEVEL);
       
       toast.success("Poll closed successfully!");
       
@@ -422,7 +423,7 @@ export function PollDetails({ pollAddress }: PollDetailsProps) {
         signature,
         blockhash,
         lastValidBlockHeight
-      }, 'confirmed');
+      }, COMMITMENT_LEVEL);
       
       toast.success("Poll deleted successfully! Rent has been recovered.");
       

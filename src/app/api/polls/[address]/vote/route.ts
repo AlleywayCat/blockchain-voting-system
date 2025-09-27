@@ -3,12 +3,8 @@ import { Connection, PublicKey, SystemProgram, Transaction } from '@solana/web3.
 import * as anchor from '@coral-xyz/anchor';
 import { Program } from '@coral-xyz/anchor';
 import { IDL } from '@/generated/votingsystemdapp-idl';
+import { SOLANA_RPC_URL, PROGRAM_ID_STRING, COMMITMENT_LEVEL } from '@/lib/solana-config';
 
-// Program ID from the deployed Solana program
-const PROGRAM_ID_STRING = process.env.NEXT_PUBLIC_PROGRAM_ID || "CfU2hH8HEy6UQhiEeECeJL66112N18EuYq1khpX2N1RF";
-
-// RPC URL for Solana connection
-const RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.devnet.solana.com';
 
 /**
  * POST endpoint for voting on a poll
@@ -51,7 +47,7 @@ export async function POST(
       const pollPublicKey = new PublicKey(address);
       
       // Set up connection to Solana
-      const connection = new Connection(RPC_URL, 'confirmed');
+      const connection = new Connection(SOLANA_RPC_URL, COMMITMENT_LEVEL);
       
       // Create a mock wallet for reading poll data
       const readOnlyWallet = {
@@ -63,7 +59,7 @@ export async function POST(
       const provider = new anchor.AnchorProvider(
         connection,
         readOnlyWallet as any,
-        { commitment: 'confirmed' }
+        { commitment: COMMITMENT_LEVEL }
       );
       
       // Get the poll data to check if it's public or private
@@ -90,7 +86,7 @@ export async function POST(
       const transaction = new Transaction();
       
       // Get latest blockhash
-      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed');
+      const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash(COMMITMENT_LEVEL);
       transaction.recentBlockhash = blockhash;
       transaction.lastValidBlockHeight = lastValidBlockHeight;
       transaction.feePayer = voterPublicKey;

@@ -9,6 +9,9 @@
   "instructions": [
     {
       "name": "cast_vote_private",
+      "docs": [
+        "Cast a vote on a private poll"
+      ],
       "discriminator": [
         200,
         175,
@@ -78,6 +81,9 @@
     },
     {
       "name": "cast_vote_public",
+      "docs": [
+        "Cast a vote on a public poll"
+      ],
       "discriminator": [
         252,
         1,
@@ -144,6 +150,9 @@
     },
     {
       "name": "close_poll",
+      "docs": [
+        "Close a poll (can only be done by the creator)"
+      ],
       "discriminator": [
         139,
         213,
@@ -169,6 +178,9 @@
     },
     {
       "name": "create_poll",
+      "docs": [
+        "Initialize a new voting poll"
+      ],
       "discriminator": [
         182,
         171,
@@ -226,6 +238,9 @@
     },
     {
       "name": "delete_poll",
+      "docs": [
+        "Delete a poll and recover rent (can only be done by the creator)"
+      ],
       "discriminator": [
         156,
         80,
@@ -251,6 +266,9 @@
     },
     {
       "name": "register_voter",
+      "docs": [
+        "Register a voter for a specific poll (only required for private polls)"
+      ],
       "discriminator": [
         229,
         124,

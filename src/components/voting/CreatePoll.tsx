@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { PublicKey } from "@solana/web3.js";
 import { Transaction } from "@solana/web3.js";
 import { Connection } from "@solana/web3.js";
+import { SOLANA_RPC_URL, COMMITMENT_LEVEL } from '@/lib/solana-config';
 
 export function CreatePoll() {
   const { connection } = useConnection();
@@ -332,8 +333,8 @@ export function CreatePoll() {
         // Send the signed transaction to the network
         console.log("Sending transaction to Solana network...");
         const connection = new Connection(
-          process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://devnet.helius-rpc.com/?api-key=28bfff14-4e1a-447d-ba02-2b8bf09c1dc1',
-          'confirmed'
+          SOLANA_RPC_URL,
+          COMMITMENT_LEVEL
         );
         
         // Show sending toast
@@ -348,7 +349,7 @@ export function CreatePoll() {
         // Wait for confirmation
         toast.info("Waiting for blockchain confirmation...");
         console.log("Waiting for transaction confirmation...");
-        const confirmation = await connection.confirmTransaction(signature, 'confirmed');
+        const confirmation = await connection.confirmTransaction(signature, COMMITMENT_LEVEL);
         console.log("Transaction confirmed:", confirmation);
         
         if (confirmation.value.err) {

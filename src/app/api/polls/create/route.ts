@@ -3,17 +3,9 @@ import { Connection, PublicKey, Keypair, Transaction, SystemProgram } from '@sol
 import * as anchor from '@coral-xyz/anchor';
 import { BN } from '@coral-xyz/anchor';
 import { IDL } from "@/generated/votingsystemdapp-idl-simple"
+import { SOLANA_RPC_URL, PROGRAM_ID_STRING, COMMITMENT_LEVEL } from '@/lib/solana-config';
+import { createBigIntResponse } from '@/lib/bigint-serializer';
 
-// Handle BigInt serialization
-(BigInt.prototype as any).toJSON = function() {
-  return this.toString();
-};
-
-// Program ID from the deployed Solana program (replace with your actual deployed program ID)
-const PROGRAM_ID_STRING = process.env.NEXT_PUBLIC_PROGRAM_ID || "CfU2hH8HEy6UQhiEeECeJL66112N18EuYq1khpX2N1RF";
-
-// RPC URL for Solana connection - explicitly use devnet
-const RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://devnet.helius-rpc.com/?api-key=28bfff14-4e1a-447d-ba02-2b8bf09c1dc1';
 
 /**
  * POST handler for creating a poll on the Solana blockchain
@@ -26,16 +18,16 @@ export async function POST(request: Request) {
     
     // Validate request body
     if (!name || !description || !options || !startTime || !endTime || isPublic === undefined || !creator) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+      return createBigIntResponse({ error: 'Missing required fields' }, { status: 400 });
     }
     
     // Basic validation
     if (options.length < 2) {
-      return NextResponse.json({ error: 'At least 2 options required' }, { status: 400 });
+      return createBigIntResponse({ error: 'At least 2 options required' }, { status: 400 });
     }
     
     if (endTime <= startTime) {
-      return NextResponse.json({ error: 'End time must be after start time' }, { status: 400 });
+      return createBigIntResponse({ error: 'End time must be after start time' }, { status: 400 });
     }
     
     console.log('Creating poll with data:', {
@@ -47,13 +39,13 @@ export async function POST(request: Request) {
       isPublic,
       creator,
       network: 'devnet',
-      rpcUrl: RPC_URL
+      rpcUrl: SOLANA_RPC_URL
     });
 
     try {
       // Create a connection to Solana - explicitly use devnet
-      const connection = new Connection(RPC_URL, 'confirmed');
-      console.log('Connected to Solana devnet at:', RPC_URL);
+      const connection = new Connection(SOLANA_RPC_URL, COMMITMENT_LEVEL);
+      console.log('Connected to Solana devnet at:', SOLANA_RPC_URL);
       
       // Generate a new keypair for the poll
       const pollKeypair = Keypair.generate();
@@ -65,7 +57,7 @@ export async function POST(request: Request) {
         creatorPubkey = new PublicKey(creator);
       } catch (pubkeyError) {
         console.error('Invalid creator public key:', pubkeyError);
-        return NextResponse.json({ 
+        return createBigIntResponse({ 
           error: 'Invalid creator public key format' 
         }, { status: 400 });
       }
@@ -76,7 +68,7 @@ export async function POST(request: Request) {
         programId = new PublicKey(PROGRAM_ID_STRING);
       } catch (error) {
         console.error('Invalid program ID:', error);
-        return NextResponse.json({ 
+        return createBigIntResponse({ 
           error: 'Invalid program ID format' 
         }, { status: 500 });
       }
@@ -98,7 +90,7 @@ export async function POST(request: Request) {
         while (retryCount <= maxRetries) {
           try {
             console.log(`Attempting to fetch blockhash (attempt ${retryCount + 1}/${maxRetries + 1})...`);
-            const result = await connection.getLatestBlockhash('confirmed');
+            const result = await connection.getLatestBlockhash(COMMITMENT_LEVEL);
             blockhash = result.blockhash;
             lastValidBlockHeight = result.lastValidBlockHeight;
             console.log('Successfully retrieved blockhash:', blockhash);
@@ -137,7 +129,7 @@ export async function POST(request: Request) {
         const provider = new anchor.AnchorProvider(
           connection,
           readOnlyWallet as any,
-          { commitment: 'confirmed' }
+          { commitment: COMMITMENT_LEVEL }
         );
         
         const program = new anchor.Program(IDL as any, provider);
@@ -172,7 +164,7 @@ export async function POST(request: Request) {
         }).toString('base64');
         
         // Return the transaction and poll address to the client
-        return NextResponse.json({
+        return createBigIntResponse({
           success: true,
           pollAddress: pollKeypair.publicKey.toString(),
           transaction: serializedTx,
@@ -181,19 +173,19 @@ export async function POST(request: Request) {
         });
       } catch (txError: any) {
         console.error('Error creating poll transaction:', txError);
-        return NextResponse.json({ 
+        return createBigIntResponse({ 
           error: `Failed to create blockchain transaction: ${txError.message || 'Unknown error'}` 
         }, { status: 500 });
       }
     } catch (error: any) {
       console.error('Error in blockchain operation:', error);
-      return NextResponse.json({ 
+      return createBigIntResponse({ 
         error: `Blockchain error: ${error.message || 'Unknown error'}` 
       }, { status: 500 });
     }
   } catch (error: any) {
     console.error('API handler error:', error);
-    return NextResponse.json({ 
+    return createBigIntResponse({ 
       error: `Server error: ${error.message || 'Unknown error'}` 
     }, { status: 500 });
   }

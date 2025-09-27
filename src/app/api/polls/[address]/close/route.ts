@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Connection, PublicKey, Transaction } from '@solana/web3.js'
 import * as anchor from '@coral-xyz/anchor'
 import { IDL } from "@/generated/votingsystemdapp-idl-simple"
+import { SOLANA_RPC_URL, PROGRAM_ID_STRING, COMMITMENT_LEVEL } from '@/lib/solana-config';
 
-const PROGRAM_ID_STRING = process.env.NEXT_PUBLIC_PROGRAM_ID!
-const RPC_URL = 'https://devnet.helius-rpc.com/?api-key=28bfff14-4e1a-447d-ba02-2b8bf09c1dc1'
 
 export async function POST(
   request: NextRequest,
@@ -21,7 +20,7 @@ export async function POST(
     console.log(`Preparing close transaction for poll: ${address} by authority: ${authority}`)
 
     // Connect to Solana
-    const connection = new Connection(RPC_URL, 'confirmed')
+    const connection = new Connection(SOLANA_RPC_URL, COMMITMENT_LEVEL)
     
     // Create public keys
     const pollPublicKey = new PublicKey(address)
@@ -32,14 +31,14 @@ export async function POST(
     const provider = new anchor.AnchorProvider(
       connection,
       {} as any, // No wallet needed for unsigned transactions
-      { commitment: 'confirmed' }
+      { commitment: COMMITMENT_LEVEL }
     )
 
     // Create program instance
     const program = new anchor.Program(IDL as any, provider)
 
     // Get fresh blockhash
-    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash('confirmed')
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash(COMMITMENT_LEVEL)
 
     // Create transaction
     const transaction = new Transaction()

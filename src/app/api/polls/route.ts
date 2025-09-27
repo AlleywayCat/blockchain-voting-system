@@ -3,17 +3,9 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import * as anchor from '@coral-xyz/anchor';
 import { Program } from '@coral-xyz/anchor';
 import { IDL } from "@/generated/votingsystemdapp-idl-simple"
+import { SOLANA_RPC_URL, PROGRAM_ID_STRING, COMMITMENT_LEVEL } from '@/lib/solana-config';
+import { createBigIntResponse } from '@/lib/bigint-serializer';
 
-// Handle BigInt serialization
-(BigInt.prototype as any).toJSON = function() {
-  return this.toString();
-};
-
-// Program ID from the deployed Solana program
-const PROGRAM_ID_STRING = process.env.NEXT_PUBLIC_PROGRAM_ID || "CfU2hH8HEy6UQhiEeECeJL66112N18EuYq1khpX2N1RF";
-
-// RPC URL for Solana connection - default to devnet
-const RPC_URL = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://devnet.helius-rpc.com/?api-key=28bfff14-4e1a-447d-ba02-2b8bf09c1dc1';
 
 // Simple in-memory cache - reset after program redeploy
 let pollsCache: any = null;
@@ -29,13 +21,13 @@ export async function GET() {
     const now = Date.now();
     if (pollsCache && (now - pollsCacheTime < CACHE_TTL)) {
       console.log('Returning cached polls data, age:', (now - pollsCacheTime)/1000, 'seconds');
-      return NextResponse.json(pollsCache);
+      return createBigIntResponse(pollsCache);
     }
     
     console.log('Cache miss or expired, fetching from blockchain');
     
     // Set up connection to Solana
-    const connection = new Connection(RPC_URL, 'confirmed');
+    const connection = new Connection(SOLANA_RPC_URL, COMMITMENT_LEVEL);
     
     // Set up program ID
     let programId: PublicKey;
@@ -43,7 +35,7 @@ export async function GET() {
       programId = new PublicKey(PROGRAM_ID_STRING);
     } catch (error) {
       console.error('Invalid program ID:', error);
-      return NextResponse.json({ error: 'Invalid program ID format' }, { status: 500 });
+      return createBigIntResponse({ error: 'Invalid program ID format' }, { status: 500 });
     }
     
     // Create a read-only provider (no wallet needed for reading)
@@ -56,7 +48,7 @@ export async function GET() {
     const provider = new anchor.AnchorProvider(
       connection,
       readOnlyWallet as any,
-      { commitment: 'confirmed', preflightCommitment: 'confirmed' }
+      { commitment: COMMITMENT_LEVEL, preflightCommitment: COMMITMENT_LEVEL }
     );
     
     // Set up the program
@@ -90,7 +82,7 @@ export async function GET() {
       pollsCache = exampleResponse;
       pollsCacheTime = now;
       
-      return NextResponse.json(exampleResponse);
+      return createBigIntResponse(exampleResponse);
     }
     
     // Fetch all polls from the program
@@ -166,7 +158,7 @@ export async function GET() {
       pollsCache = response;
       pollsCacheTime = now;
       
-      return NextResponse.json(response);
+      return createBigIntResponse(response);
       
     } catch (error: any) {
       console.error('Error fetching polls:', error);
@@ -193,11 +185,11 @@ export async function GET() {
       pollsCache = exampleResponse;
       pollsCacheTime = now;
       
-      return NextResponse.json(exampleResponse);
+      return createBigIntResponse(exampleResponse);
     }
   } catch (error: any) {
     console.error('Unexpected error in GET handler:', error);
-    return NextResponse.json({ 
+    return createBigIntResponse({ 
       error: `Unexpected error: ${error.message || 'Unknown error'}` 
     }, { status: 500 });
   }

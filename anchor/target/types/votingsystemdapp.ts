@@ -15,6 +15,9 @@ export type Votingsystemdapp = {
   "instructions": [
     {
       "name": "castVotePrivate",
+      "docs": [
+        "Cast a vote on a private poll"
+      ],
       "discriminator": [
         200,
         175,
@@ -84,6 +87,9 @@ export type Votingsystemdapp = {
     },
     {
       "name": "castVotePublic",
+      "docs": [
+        "Cast a vote on a public poll"
+      ],
       "discriminator": [
         252,
         1,
@@ -150,6 +156,9 @@ export type Votingsystemdapp = {
     },
     {
       "name": "closePoll",
+      "docs": [
+        "Close a poll (can only be done by the creator)"
+      ],
       "discriminator": [
         139,
         213,
@@ -175,6 +184,9 @@ export type Votingsystemdapp = {
     },
     {
       "name": "createPoll",
+      "docs": [
+        "Initialize a new voting poll"
+      ],
       "discriminator": [
         182,
         171,
@@ -232,6 +244,9 @@ export type Votingsystemdapp = {
     },
     {
       "name": "deletePoll",
+      "docs": [
+        "Delete a poll and recover rent (can only be done by the creator)"
+      ],
       "discriminator": [
         156,
         80,
@@ -257,6 +272,9 @@ export type Votingsystemdapp = {
     },
     {
       "name": "registerVoter",
+      "docs": [
+        "Register a voter for a specific poll (only required for private polls)"
+      ],
       "discriminator": [
         229,
         124,

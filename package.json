@@ -9,7 +9,7 @@
     "anchor-localnet": "cd anchor && anchor localnet",
     "anchor-test": "cd anchor && anchor test",
     "anchor-deploy": "cd anchor && anchor deploy",
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "ci": "npm run build",
     "start": "next start",
