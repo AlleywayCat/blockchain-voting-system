@@ -1,139 +1,77 @@
-# Decentralized Voting on Solana
+# Decentralized Voting System
 
-A decentralized application built on Solana blockchain that enables creating and participating in transparent and secure voting polls.
+A blockchain-based voting application built on Solana that enables secure, transparent, and tamper-proof voting polls.
 
-## Features
+## What is this?
 
-- **Create Voting Polls**: Create customizable polls with multiple options
-- **Public & Private Polls**: Support for both public (open to anyone) and private (restricted) voting
-- **Secure Voting**: Built on Solana blockchain for transparent and tamper-proof voting
-- **Real-time Results**: View voting results in real-time
-- **Poll Management**: Close polls, view historical results
+This is a decentralized voting app where you can:
+- Create voting polls with custom options
+- Make polls public (anyone can vote) or private (restricted access)
+- Vote on polls using your Solana wallet
+- View real-time results
+- Trust that votes are secure and transparent on the blockchain
 
-## Technology Stack
-
-- **Frontend**: Next.js, React, TailwindCSS
-- **Blockchain**: Solana
-- **Smart Contract**: Rust with Anchor framework
-- **Development**: TypeScript
-
-## Getting Started
+## Quick Setup
 
 ### Prerequisites
-
-- Node v18.18.0 or higher
-- Rust v1.77.2 or higher
-- Anchor CLI 0.30.1 or higher
-- Solana CLI 1.18.17 or higher
-- Solflare Wallet or other Solana wallet browser extension
+- Node.js v18.18.0+
+- A Solana wallet (like Solflare)
 
 ### Installation
-
-#### Clone the repo
-
-```shell
+1. Clone and install:
+```bash
 git clone https://github.com/yourusername/voting-system-dapp.git
 cd voting-system-dapp
+npm install
 ```
 
-#### Install Dependencies
-
-```shell
-pnpm install
+2. Start the app:
+```bash
+npm run dev
 ```
 
-#### Start the web app
+3. Open http://localhost:3000 in your browser
 
-```shell
-pnpm dev
+## How to Use
+
+1. **Connect Wallet**: Click "Connect Wallet" and select your Solana wallet
+2. **Create Poll**: Click "Create Poll", add your question and options
+3. **Vote**: Browse polls and click to vote (requires wallet connection)
+4. **View Results**: See live voting results and poll details
+
+## For Developers
+
+### Tech Stack
+- **Frontend**: Next.js + React + TailwindCSS
+- **Blockchain**: Solana + Anchor framework
+- **Language**: TypeScript
+
+### Development Commands
+```bash
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Run linting
+npm run lint
+
+# Blockchain commands
+npm run anchor-build      # Build smart contract
+npm run anchor-test       # Run tests
+npm run anchor-localnet   # Start local blockchain
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
-
-## Project Structure
-
-- `/src` - Frontend Next.js application
-  - `/app` - Application pages and routes
-  - `/components` - React components
-  - `/lib` - Utility functions and hooks
-  - `/types` - TypeScript type definitions
-- `/anchor` - Solana smart contract (program)
-  - `/programs/votingsystemdapp` - Main program code
-
-## Smart Contract Features
-
-The Solana program provides the following functionality:
-
-- Create polls with customizable options, time ranges, and visibility settings
-- Register voters for private polls
-- Cast votes on both public and private polls
-- Close polls after completion
-
-## Development
-
-### Solana Program Commands
-
-You can use any normal anchor commands. Either move to the `anchor` directory and run the `anchor` command or prefix the
-command with `pnpm`, eg: `pnpm anchor`.
-
-#### Sync the program id:
-
-```shell
-pnpm anchor keys sync
+### Project Structure
 ```
-
-#### Build the program:
-
-```shell
-pnpm anchor-build
+src/           # Frontend application
+anchor/        # Solana smart contract
+public/        # Static assets
 ```
-
-#### Start the test validator with the program deployed:
-
-```shell
-pnpm anchor-localnet
-```
-
-#### Run the tests
-
-```shell
-pnpm anchor-test
-```
-
-#### Deploy to Devnet
-
-```shell
-pnpm anchor deploy --provider.cluster devnet
-```
-
-### Web Application Commands
-
-#### Start the web app
-
-```shell
-pnpm dev
-```
-
-#### Build the web app
-
-```shell
-pnpm build
-```
-
-## Usage
-
-1. Connect your Solana wallet
-2. Create a new poll with your desired options
-3. Share the poll with others
-4. Vote on polls
-5. View results in real-time
 
 ## License
 
-This project is licensed under the terms specified in the LICENSE file.
+MIT License - see LICENSE file for details.
 
-## Acknowledgments
-
-- Solana Foundation
-- Anchor Framework
-- Next.js Team
+🧑🏼‍🚀 Made by Nikola Lausev
