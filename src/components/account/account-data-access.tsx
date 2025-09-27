@@ -111,13 +111,23 @@ export function useRequestAirdrop({ address }: { address: PublicKey }) {
   return useMutation({
     mutationKey: ['airdrop', { endpoint: connection.rpcEndpoint, address }],
     mutationFn: async (amount: number = 1) => {
-      const [latestBlockhash, signature] = await Promise.all([
-        connection.getLatestBlockhash(),
-        connection.requestAirdrop(address, amount * LAMPORTS_PER_SOL),
-      ])
+      try {
+        // Request airdrop first
+        const signature = await connection.requestAirdrop(address, amount * LAMPORTS_PER_SOL)
 
-      await connection.confirmTransaction({ signature, ...latestBlockhash }, 'confirmed')
-      return signature
+        // Get blockhash after successful airdrop request
+        const latestBlockhash = await connection.getLatestBlockhash()
+
+        // Confirm the transaction
+        await connection.confirmTransaction({ signature, ...latestBlockhash }, 'confirmed')
+        return signature
+      } catch (error: any) {
+        // Handle specific airdrop errors
+        if (error.message?.includes('airdrop to') && error.message?.includes('failed')) {
+          throw new Error(`Airdrop failed. This can happen due to rate limiting or if the account has reached the maximum airdrop limit. Please try again later.`)
+        }
+        throw error
+      }
     },
     onSuccess: (signature) => {
       transactionToast(signature)
@@ -129,6 +139,9 @@ export function useRequestAirdrop({ address }: { address: PublicKey }) {
           queryKey: ['get-signatures', { endpoint: connection.rpcEndpoint, address }],
         }),
       ])
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Airdrop failed')
     },
   })
 }

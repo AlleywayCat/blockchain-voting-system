@@ -5,18 +5,27 @@ import { useMemo } from 'react'
 import { ellipsify } from '../ui/ui-layout'
 import { ExplorerLink } from '../cluster/cluster-ui'
 import { useVotingsystemdappProgram, useVotingsystemdappProgramAccount } from './votingsystemdapp-data-access'
+import { Button } from '../ui/button'
+import { RefreshCw } from 'lucide-react'
+import { useConfirmationDialog } from '../ui/confirmation-dialog'
 
 export function VotingsystemdappCreate() {
   const { initialize } = useVotingsystemdappProgram()
 
   return (
-    <button
-      className="btn btn-xs lg:btn-md btn-primary"
+    <Button
       onClick={() => initialize.mutateAsync(Keypair.generate())}
       disabled={initialize.isPending}
     >
-      Create {initialize.isPending && '...'}
-    </button>
+      {initialize.isPending ? (
+        <>
+          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+          Creating...
+        </>
+      ) : (
+        'Create New Account'
+      )}
+    </Button>
   )
 }
 
@@ -24,29 +33,35 @@ export function VotingsystemdappList() {
   const { accounts, getProgramAccount } = useVotingsystemdappProgram()
 
   if (getProgramAccount.isLoading) {
-    return <span className="loading loading-spinner loading-lg"></span>
+    return <RefreshCw className="h-8 w-8 animate-spin text-primary" />
   }
   if (!getProgramAccount.data?.value) {
     return (
-      <div className="alert alert-info flex justify-center">
-        <span>Program account not found. Make sure you have deployed the program and are on the correct cluster.</span>
+      <div className="bg-error/10 dark:bg-error/5 border border-error/20 dark:border-error/10 rounded-lg p-6 text-center">
+        <p className="text-error dark:text-error/90">
+          Program account not found. Make sure you have deployed the program and are on the correct cluster.
+        </p>
       </div>
     )
   }
   return (
-    <div className={'space-y-6'}>
+    <div className="space-y-6">
       {accounts.isLoading ? (
-        <span className="loading loading-spinner loading-lg"></span>
+        <div className="flex justify-center">
+          <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+        </div>
       ) : accounts.data?.length ? (
-        <div className="grid md:grid-cols-2 gap-4">
-          {accounts.data?.map((account) => (
+        <div className="grid md:grid-cols-2 gap-6">
+          {accounts.data?.map((account: { publicKey: PublicKey }) => (
             <VotingsystemdappCard key={account.publicKey.toString()} account={account.publicKey} />
           ))}
         </div>
       ) : (
-        <div className="text-center">
-          <h2 className={'text-2xl'}>No accounts</h2>
-          No accounts found. Create one above to get started.
+        <div className="text-center py-12">
+          <h2 className="text-xl font-semibold text-main dark:text-main mb-2">No Accounts Found</h2>
+          <p className="text-secondary dark:text-secondary mb-6">
+            Create a new account above to get started with the voting program.
+          </p>
         </div>
       )}
     </div>
@@ -54,69 +69,70 @@ export function VotingsystemdappList() {
 }
 
 function VotingsystemdappCard({ account }: { account: PublicKey }) {
-  const { accountQuery, incrementMutation, setMutation, decrementMutation, closeMutation } = useVotingsystemdappProgramAccount({
+  const { accountQuery, closeMutation } = useVotingsystemdappProgramAccount({
     account,
   })
 
-  const count = useMemo(() => accountQuery.data?.count ?? 0, [accountQuery.data?.count])
+  const pollData = useMemo(() => accountQuery.data || null, [accountQuery.data])
+  const { openDialog: openCloseDialog, ConfirmationDialog: CloseConfirmationDialog } = useConfirmationDialog()
+
+  const handleCloseAccount = () => {
+    openCloseDialog(
+      {
+        title: "Close Account",
+        description: "Are you sure you want to close this account? This action cannot be undone and will permanently delete the account data.",
+        confirmText: "Close Account",
+        cancelText: "Cancel",
+        variant: "destructive",
+        icon: "warning",
+        isLoading: closeMutation.isPending,
+      },
+      () => closeMutation.mutateAsync()
+    );
+  };
 
   return accountQuery.isLoading ? (
-    <span className="loading loading-spinner loading-lg"></span>
+    <div className="flex justify-center">
+      <RefreshCw className="h-8 w-8 animate-spin text-primary" />
+    </div>
   ) : (
-    <div className="card card-bordered border-base-300 border-4 text-neutral-content">
-      <div className="card-body items-center text-center">
-        <div className="space-y-6">
-          <h2 className="card-title justify-center text-3xl cursor-pointer" onClick={() => accountQuery.refetch()}>
-            {count}
-          </h2>
-          <div className="card-actions justify-around">
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => incrementMutation.mutateAsync()}
-              disabled={incrementMutation.isPending}
-            >
-              Increment
-            </button>
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => {
-                const value = window.prompt('Set value to:', count.toString() ?? '0')
-                if (!value || parseInt(value) === count || isNaN(parseInt(value))) {
-                  return
-                }
-                return setMutation.mutateAsync(parseInt(value))
-              }}
-              disabled={setMutation.isPending}
-            >
-              Set
-            </button>
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => decrementMutation.mutateAsync()}
-              disabled={decrementMutation.isPending}
-            >
-              Decrement
-            </button>
+    <div className="card-modern p-6">
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-2">Poll Data</h3>
+          {pollData ? (
+            <div className="text-sm">
+              <p><strong>Name:</strong> {pollData.name}</p>
+              <p><strong>Description:</strong> {pollData.description}</p>
+              <p><strong>Active:</strong> {pollData.isActive ? 'Yes' : 'No'}</p>
+            </div>
+          ) : (
+            <p className="text-gray-500">No poll data found</p>
+          )}
+        </div>
+        <div className="text-center space-y-4 border-t border-main dark:border-main pt-4 w-full">
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg px-4 py-3 w-full">
+            <p className="text-sm text-secondary dark:text-secondary mb-1">Account Address</p>
+            <ExplorerLink 
+              path={`account/${account}`} 
+              label={ellipsify(account.toString())} 
+              className="text-primary hover:text-primary-dark font-mono text-sm transition-colors"
+            />
           </div>
-          <div className="text-center space-y-4">
-            <p>
-              <ExplorerLink path={`account/${account}`} label={ellipsify(account.toString())} />
-            </p>
-            <button
-              className="btn btn-xs btn-secondary btn-outline"
-              onClick={() => {
-                if (!window.confirm('Are you sure you want to close this account?')) {
-                  return
-                }
-                return closeMutation.mutateAsync()
-              }}
-              disabled={closeMutation.isPending}
-            >
-              Close
-            </button>
-          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={handleCloseAccount}
+            disabled={closeMutation.isPending}
+          >
+            {closeMutation.isPending ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : null}
+            Close Account
+          </Button>
         </div>
       </div>
+      <CloseConfirmationDialog />
     </div>
   )
 }

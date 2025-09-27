@@ -37,7 +37,11 @@ export const defaultClusters: Cluster[] = [
   },
 ]
 
-const clusterAtom = atomWithStorage<Cluster>('solana-cluster', defaultClusters[0])
+// Force devnet as default (clear any stored value first)
+if (typeof window !== 'undefined') {
+  localStorage.removeItem('solana-cluster');
+}
+const clusterAtom = atomWithStorage<Cluster>('solana-cluster', defaultClusters[0]) // defaultClusters[0] is devnet
 const clustersAtom = atomWithStorage<Cluster[]>('solana-clusters', defaultClusters)
 
 const activeClustersAtom = atom<Cluster[]>((get) => {

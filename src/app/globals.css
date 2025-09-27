@@ -1,19 +1,401 @@
+/* Solana Wallet Adapter Styles */
+@import './wallet-adapter.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
-  height: 100%;
+/* Wallet Adapter Styling - Fixed UI Issues */
+
+/* Fix z-index issues and ensure modal displays properly */
+.wallet-adapter-modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background-color: rgba(0, 0, 0, 0.75) !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
-.wallet-adapter-button-trigger {
-  background: rgb(100, 26, 230) !important;
-  border-radius: 8px !important;
-  padding-left: 16px !important;
-  padding-right: 16px !important;
+.wallet-adapter-modal-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 20px !important;
 }
-.wallet-adapter-dropdown-list,
-.wallet-adapter-button {
+
+.wallet-adapter-modal-wrapper {
+  position: relative !important;
+  z-index: 10000 !important;
+  max-width: 420px !important;
+  width: 100% !important;
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  color: hsl(var(--card-foreground)) !important;
   font-family: inherit !important;
 }
+
+.wallet-adapter-modal-title {
+  color: hsl(var(--card-foreground)) !important;
+  font-weight: 600 !important;
+  font-size: 24px !important;
+  text-align: center !important;
+  padding: 32px 24px 24px 24px !important;
+  margin: 0 !important;
+}
+
+/* Ensure wallet list is visible and properly styled */
+.wallet-adapter-modal-list {
+  margin: 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+  width: 100% !important;
+}
+
+/* Override any potential blue hover colors */
+.wallet-adapter-modal-list li:hover,
+.wallet-adapter-modal-list li button:hover,
+.wallet-adapter-modal-wrapper .wallet-adapter-button:hover {
+  background: hsl(var(--accent)) !important;
+  background-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+.wallet-adapter-modal-list .wallet-adapter-button {
+  background: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: calc(var(--radius) - 2px) !important;
+  margin: 6px 16px !important;
+  padding: 16px 20px !important;
+  height: auto !important;
+  width: calc(100% - 32px) !important;
+  text-align: left !important;
+  justify-content: flex-start !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.wallet-adapter-modal-list .wallet-adapter-button:hover,
+.wallet-adapter-modal-list .wallet-adapter-button:hover:not([disabled]) {
+  background: hsl(var(--accent)) !important;
+  background-color: hsl(var(--accent)) !important;
+  border-color: hsl(var(--border)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+}
+
+.wallet-adapter-modal-list .wallet-adapter-button:focus,
+.wallet-adapter-modal-list .wallet-adapter-button:focus-visible {
+  outline: 2px solid hsl(var(--primary)) !important;
+  outline-offset: 2px !important;
+}
+
+/* Button Styling */
+.wallet-adapter-button,
+.wallet-adapter-button-trigger {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  border: 1px solid transparent !important;
+  border-radius: calc(var(--radius) - 2px) !important;
+  font-family: inherit !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  height: 36px !important;
+  padding: 8px 16px !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.wallet-adapter-button:hover:not([disabled]) {
+  background-color: hsl(var(--primary) / 0.9) !important;
+}
+
+.wallet-adapter-button:disabled {
+  background-color: hsl(var(--muted)) !important;
+  color: hsl(var(--muted-foreground)) !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+/* Icon Styling */
+.wallet-adapter-modal-list .wallet-adapter-button-start-icon {
+  margin-right: 16px !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.wallet-adapter-modal-list .wallet-adapter-button-start-icon img {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: calc(var(--radius) - 4px) !important;
+}
+
+/* Close Button Styling - Conservative approach */
+.wallet-adapter-modal-wrapper button[aria-label="Close"] {
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  color: hsl(var(--muted-foreground)) !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: calc(var(--radius) - 4px) !important;
+  transition: all 0.2s ease !important;
+  z-index: 10001 !important;
+}
+
+.wallet-adapter-modal-wrapper button[aria-label="Close"]:hover {
+  background: hsl(var(--muted)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Ensure modal title has enough padding to avoid overlap with close button */
+.wallet-adapter-modal-title {
+  color: hsl(var(--card-foreground)) !important;
+  font-weight: 600 !important;
+  font-size: 24px !important;
+  text-align: center !important;
+  padding: 32px 60px 24px 24px !important;
+  margin: 0 !important;
+}
+
+/* Modal Layout and Spacing */
+.wallet-adapter-modal-middle {
+  padding: 0 16px 32px 16px !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+.wallet-adapter-modal-list-more {
+  color: hsl(var(--muted-foreground)) !important;
+  background: transparent !important;
+  border: none !important;
+  margin: 8px 16px !important;
+  padding: 12px 16px !important;
+  border-radius: calc(var(--radius) - 2px) !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  transition: all 0.2s ease !important;
+}
+
+.wallet-adapter-modal-list-more:hover {
+  color: hsl(var(--foreground)) !important;
+  background: hsl(var(--accent)) !important;
+}
+
+.wallet-adapter-modal-list-more svg {
+  margin-left: 8px !important;
+  transition: transform 0.2s ease !important;
+}
+
+/* Context-specific sizing */
+section .wallet-adapter-button,
+.wallet-adapter-button-trigger {
+  height: 40px !important;
+  font-size: 16px !important;
+  padding: 12px 20px !important;
+  font-weight: 500 !important;
+}
+
+/* Navbar wallet button - subtle and refined */
+nav .wallet-adapter-button {
+  height: 32px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
+  background: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  color: hsl(var(--foreground)) !important;
+  transition: all 0.2s ease !important;
+}
+
+nav .wallet-adapter-button:hover:not([disabled]) {
+  background: hsl(var(--muted)) !important;
+  border-color: hsl(var(--border)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Connected state styling */
+nav .wallet-adapter-button[data-state="connected"] {
+  background: hsl(var(--muted)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Wallet dropdown styling */
+nav .wallet-adapter-dropdown {
+  border-radius: 6px !important;
+}
+
+/* Dropdown Styling */
+.wallet-adapter-dropdown-list {
+  background: hsl(var(--card)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  z-index: 9998 !important;
+}
+
+.wallet-adapter-dropdown-list-item {
+  background: transparent !important;
+  color: hsl(var(--foreground)) !important;
+  border: none !important;
+  font-family: inherit !important;
+}
+
+.wallet-adapter-dropdown-list-item:hover {
+  background: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .wallet-adapter-modal-container {
+    padding: 16px !important;
+  }
+
+  .wallet-adapter-modal-wrapper {
+    max-width: calc(100vw - 32px) !important;
+  }
+
+  .wallet-adapter-modal-title {
+    font-size: 20px !important;
+    padding: 24px 50px 16px 16px !important;
+  }
+
+  .wallet-adapter-modal-list .wallet-adapter-button {
+    margin: 4px 8px !important;
+    padding: 14px 16px !important;
+    width: calc(100% - 16px) !important;
+  }
+
+  .wallet-adapter-modal-middle {
+    padding: 0 8px 24px 8px !important;
+  }
+
+  /* Close button on mobile */
+  .wallet-adapter-modal-wrapper button[aria-label="Close"] {
+    top: 12px !important;
+    right: 12px !important;
+    width: 28px !important;
+    height: 28px !important;
+  }
+}
+
+/* Apple-inspired Design Tokens */
+@layer base {
+  :root {
+    /* Apple-style neutral palette */
+    --background: 0 0% 100%;
+    --foreground: 20 14.3% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14.3% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14.3% 4.1%;
+    
+    /* Apple blue system */
+    --primary: 211 100% 50%;
+    --primary-foreground: 0 0% 98%;
+    
+    /* Subtle grays */
+    --secondary: 210 40% 98%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 98%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 98%;
+    --accent-foreground: 222.2 84% 4.9%;
+    
+    /* Semantic colors */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+    
+    /* Borders and inputs */
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 211 100% 50%;
+    
+    /* Apple-style radius */
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 0 0% 95%;
+    --card: 20 14.3% 4.1%;
+    --card-foreground: 0 0% 95%;
+    --popover: 20 14.3% 4.1%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 211 100% 50%;
+    --primary-foreground: 20 14.3% 4.1%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 211 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    height: 100%;
+  }
+  
+  html {
+    height: 100%;
+  }
+}
+
+/* Custom utility classes for the voting app */
+@layer utilities {
+  .container-main {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+

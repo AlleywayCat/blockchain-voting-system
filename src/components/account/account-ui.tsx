@@ -8,6 +8,11 @@ import { useMemo, useState } from 'react'
 import { AppModal, ellipsify } from '../ui/ui-layout'
 import { useCluster } from '../cluster/cluster-data-access'
 import { ExplorerLink } from '../cluster/cluster-ui'
+import { Button } from '../ui/button'
+import { Alert, AlertDescription } from '../ui/alert'
+import { Badge } from '../ui/badge'
+import { Input } from '../ui/input'
+import { RefreshCw } from 'lucide-react'
 import {
   useGetBalance,
   useGetSignatures,
@@ -44,17 +49,20 @@ export function AccountBalanceCheck({ address }: { address: PublicKey }) {
   }
   if (query.isError || !query.data) {
     return (
-      <div className="alert alert-warning text-warning-content/80 rounded-none flex justify-center">
-        <span>
-          You are connected to <strong>{cluster.name}</strong> but your account is not found on this cluster.
-        </span>
-        <button
-          className="btn btn-xs btn-neutral"
-          onClick={() => mutation.mutateAsync(1).catch((err) => console.log(err))}
-        >
-          Request Airdrop
-        </button>
-      </div>
+      <Alert className="border-yellow-200 bg-yellow-50 text-yellow-800 rounded-none">
+        <AlertDescription className="flex items-center justify-center gap-4">
+          <span>
+            You are connected to <strong>{cluster.name}</strong> but your account is not found on this cluster.
+          </span>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => mutation.mutateAsync(1).catch((err) => console.log(err))}
+          >
+            Request Airdrop
+          </Button>
+        </AlertDescription>
+      </Alert>
     )
   }
   return null
@@ -72,24 +80,30 @@ export function AccountButtons({ address }: { address: PublicKey }) {
       <ModalAirdrop hide={() => setShowAirdropModal(false)} address={address} show={showAirdropModal} />
       <ModalReceive address={address} show={showReceiveModal} hide={() => setShowReceiveModal(false)} />
       <ModalSend address={address} show={showSendModal} hide={() => setShowSendModal(false)} />
-      <div className="space-x-2">
-        <button
+      <div className="flex gap-2 justify-center">
+        <Button
+          variant="outline"
+          size="sm"
           disabled={cluster.network?.includes('mainnet')}
-          className="btn btn-xs lg:btn-md btn-outline"
           onClick={() => setShowAirdropModal(true)}
         >
           Airdrop
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
           disabled={wallet.publicKey?.toString() !== address.toString()}
-          className="btn btn-xs lg:btn-md btn-outline"
           onClick={() => setShowSendModal(true)}
         >
           Send
-        </button>
-        <button className="btn btn-xs lg:btn-md btn-outline" onClick={() => setShowReceiveModal(true)}>
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowReceiveModal(true)}
+        >
           Receive
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -105,80 +119,91 @@ export function AccountTokens({ address }: { address: PublicKey }) {
   }, [query.data, showAll])
 
   return (
-    <div className="space-y-2">
-      <div className="justify-between">
-        <div className="flex justify-between">
-          <h2 className="text-2xl font-bold">Token Accounts</h2>
-          <div className="space-x-2">
-            {query.isLoading ? (
-              <span className="loading loading-spinner"></span>
-            ) : (
-              <button
-                className="btn btn-sm btn-outline"
-                onClick={async () => {
-                  await query.refetch()
-                  await client.invalidateQueries({
-                    queryKey: ['getTokenAccountBalance'],
-                  })
-                }}
-              >
-                <IconRefresh size={16} />
-              </button>
-            )}
-          </div>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Token Accounts</h2>
+        <div className="flex items-center space-x-2">
+          {query.isLoading ? (
+            <RefreshCw className="h-4 w-4 animate-spin" />
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                await query.refetch()
+                await client.invalidateQueries({
+                  queryKey: ['getTokenAccountBalance'],
+                })
+              }}
+            >
+              <IconRefresh size={16} />
+            </Button>
+          )}
         </div>
       </div>
-      {query.isError && <pre className="alert alert-error">Error: {query.error?.message.toString()}</pre>}
+      {query.isError && (
+        <Alert className="border-red-200 bg-red-50">
+          <AlertDescription className="text-red-800">
+            Error: {query.error?.message.toString()}
+          </AlertDescription>
+        </Alert>
+      )}
       {query.isSuccess && (
         <div>
           {query.data.length === 0 ? (
-            <div>No token accounts found.</div>
+            <div className="text-center py-8 text-muted-foreground">No token accounts found.</div>
           ) : (
-            <table className="table border-4 rounded-lg border-separate border-base-300">
-              <thead>
-                <tr>
-                  <th>Public Key</th>
-                  <th>Mint</th>
-                  <th className="text-right">Balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {items?.map(({ account, pubkey }) => (
-                  <tr key={pubkey.toString()}>
-                    <td>
-                      <div className="flex space-x-2">
-                        <span className="font-mono">
-                          <ExplorerLink label={ellipsify(pubkey.toString())} path={`account/${pubkey.toString()}`} />
-                        </span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="flex space-x-2">
-                        <span className="font-mono">
-                          <ExplorerLink
-                            label={ellipsify(account.data.parsed.info.mint)}
-                            path={`account/${account.data.parsed.info.mint.toString()}`}
-                          />
-                        </span>
-                      </div>
-                    </td>
-                    <td className="text-right">
-                      <span className="font-mono">{account.data.parsed.info.tokenAmount.uiAmount}</span>
-                    </td>
+            <div className="rounded-lg border bg-card overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left p-4 font-medium">Public Key</th>
+                    <th className="text-left p-4 font-medium">Mint</th>
+                    <th className="text-right p-4 font-medium">Balance</th>
                   </tr>
-                ))}
+                </thead>
+                <tbody>
+                  {items?.map(({ account, pubkey }) => (
+                    <tr key={pubkey.toString()} className="border-b border-border last:border-b-0 hover:bg-muted/20">
+                      <td className="p-4">
+                        <div className="flex space-x-2">
+                          <span className="font-mono">
+                            <ExplorerLink label={ellipsify(pubkey.toString())} path={`account/${pubkey.toString()}`} />
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex space-x-2">
+                          <span className="font-mono">
+                            <ExplorerLink
+                              label={ellipsify(account.data.parsed.info.mint)}
+                              path={`account/${account.data.parsed.info.mint.toString()}`}
+                            />
+                          </span>
+                        </div>
+                      </td>
+                      <td className="text-right p-4">
+                        <span className="font-mono">{account.data.parsed.info.tokenAmount.uiAmount}</span>
+                      </td>
+                    </tr>
+                  ))}
 
-                {(query.data?.length ?? 0) > 5 && (
-                  <tr>
-                    <td colSpan={4} className="text-center">
-                      <button className="btn btn-xs btn-outline" onClick={() => setShowAll(!showAll)}>
-                        {showAll ? 'Show Less' : 'Show All'}
-                      </button>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  {(query.data?.length ?? 0) > 5 && (
+                    <tr>
+                      <td colSpan={4} className="text-center py-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowAll(!showAll)}
+                        >
+                          {showAll ? 'Show Less' : 'Show All'}
+                        </Button>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
@@ -196,66 +221,80 @@ export function AccountTransactions({ address }: { address: PublicKey }) {
   }, [query.data, showAll])
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between">
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Transaction History</h2>
-        <div className="space-x-2">
+        <div className="flex items-center space-x-2">
           {query.isLoading ? (
-            <span className="loading loading-spinner"></span>
+            <RefreshCw className="h-4 w-4 animate-spin" />
           ) : (
-            <button className="btn btn-sm btn-outline" onClick={() => query.refetch()}>
+            <Button variant="outline" size="sm" onClick={() => query.refetch()}>
               <IconRefresh size={16} />
-            </button>
+            </Button>
           )}
         </div>
       </div>
-      {query.isError && <pre className="alert alert-error">Error: {query.error?.message.toString()}</pre>}
+      {query.isError && (
+        <Alert className="border-red-200 bg-red-50">
+          <AlertDescription className="text-red-800">
+            Error: {query.error?.message.toString()}
+          </AlertDescription>
+        </Alert>
+      )}
       {query.isSuccess && (
         <div>
           {query.data.length === 0 ? (
-            <div>No transactions found.</div>
+            <div className="text-center py-8 text-muted-foreground">No transactions found.</div>
           ) : (
-            <table className="table border-4 rounded-lg border-separate border-base-300">
-              <thead>
-                <tr>
-                  <th>Signature</th>
-                  <th className="text-right">Slot</th>
-                  <th>Block Time</th>
-                  <th className="text-right">Status</th>
-                </tr>
-              </thead>
+            <div className="rounded-lg border bg-card overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left p-4 font-medium">Signature</th>
+                    <th className="text-right p-4 font-medium">Slot</th>
+                    <th className="text-left p-4 font-medium">Block Time</th>
+                    <th className="text-right p-4 font-medium">Status</th>
+                  </tr>
+                </thead>
               <tbody>
                 {items?.map((item) => (
-                  <tr key={item.signature}>
-                    <th className="font-mono">
+                  <tr key={item.signature} className="border-b border-border last:border-b-0 hover:bg-muted/20">
+                    <td className="p-4 font-mono">
                       <ExplorerLink path={`tx/${item.signature}`} label={ellipsify(item.signature, 8)} />
-                    </th>
-                    <td className="font-mono text-right">
+                    </td>
+                    <td className="p-4 font-mono text-right">
                       <ExplorerLink path={`block/${item.slot}`} label={item.slot.toString()} />
                     </td>
-                    <td>{new Date((item.blockTime ?? 0) * 1000).toISOString()}</td>
-                    <td className="text-right">
+                    <td className="p-4">{new Date((item.blockTime ?? 0) * 1000).toISOString()}</td>
+                    <td className="text-right p-4">
                       {item.err ? (
-                        <div className="badge badge-error" title={JSON.stringify(item.err)}>
+                        <Badge variant="destructive" title={JSON.stringify(item.err)}>
                           Failed
-                        </div>
+                        </Badge>
                       ) : (
-                        <div className="badge badge-success">Success</div>
+                        <Badge className="bg-green-100 text-green-800 border-green-200">
+                          Success
+                        </Badge>
                       )}
                     </td>
                   </tr>
                 ))}
                 {(query.data?.length ?? 0) > 5 && (
                   <tr>
-                    <td colSpan={4} className="text-center">
-                      <button className="btn btn-xs btn-outline" onClick={() => setShowAll(!showAll)}>
+                    <td colSpan={4} className="text-center py-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowAll(!showAll)}
+                      >
                         {showAll ? 'Show Less' : 'Show All'}
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 )}
               </tbody>
-            </table>
+              </table>
+            </div>
           )}
         </div>
       )}
@@ -289,13 +328,12 @@ function ModalAirdrop({ hide, show, address }: { hide: () => void; show: boolean
       submitLabel="Request Airdrop"
       submit={() => mutation.mutateAsync(parseFloat(amount)).then(() => hide())}
     >
-      <input
+      <Input
         disabled={mutation.isPending}
         type="number"
         step="any"
         min="1"
         placeholder="Amount"
-        className="input input-bordered w-full"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
       />
@@ -329,24 +367,24 @@ function ModalSend({ hide, show, address }: { hide: () => void; show: boolean; a
           .then(() => hide())
       }}
     >
-      <input
-        disabled={mutation.isPending}
-        type="text"
-        placeholder="Destination"
-        className="input input-bordered w-full"
-        value={destination}
-        onChange={(e) => setDestination(e.target.value)}
-      />
-      <input
-        disabled={mutation.isPending}
-        type="number"
-        step="any"
-        min="1"
-        placeholder="Amount"
-        className="input input-bordered w-full"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-      />
+      <div className="space-y-4">
+        <Input
+          disabled={mutation.isPending}
+          type="text"
+          placeholder="Destination"
+          value={destination}
+          onChange={(e) => setDestination(e.target.value)}
+        />
+        <Input
+          disabled={mutation.isPending}
+          type="number"
+          step="any"
+          min="1"
+          placeholder="Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+        />
+      </div>
     </AppModal>
   )
 }
