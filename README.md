@@ -15,7 +15,7 @@ This is a decentralized voting app where you can:
 
 ### Prerequisites
 - Node.js v18.18.0+
-- A Solana wallet (like Solflare)
+- A Solana wallet (i.e. [Solflare](https://www.solflare.com/))
 
 ### Installation
 1. Clone and install:
